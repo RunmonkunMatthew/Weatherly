@@ -1,5 +1,4 @@
 //https://api.openweathermap.org/data/2.5/weather?q={city name}&appid={API key}
-//Api Key =
 
 const body = document.querySelector('body');
 const searchInput = document.querySelector('#city-input');
@@ -10,13 +9,55 @@ const temprature = weatherCard.querySelector('#temp');
 const weatherCondition = weatherCard.querySelector('#weather-condition');
 const weatherIcon = document.querySelector('#weather-icon');
 
+function displaySavedTemp() {
+  const itemsFromStorage = localStorage.getItem('condition');
+  if (itemsFromStorage) {
+    const res = JSON.parse(itemsFromStorage);
+    const data = res[0];
+    const newEl = document.createElement('div');
+    newEl.classList.add('details-top');
+    newEl.innerHTML = `
+            <h2 id="country-name">${data.name}</h2>
+            <p id="temp">${data.temp}°c</p>
+            <p class="description">${data.descr}</p>
+            <p id="weather-condition">
+              <img src="${`http://openweathermap.org/img/w/${data.icon}.png`}" alt="Weather Icon" id="weather-icon" />
+            </p>
+    
+    `;
+
+    if (data.main === 'range of thunderstorm') {
+      body.classList.add('thunderstorm');
+    } else if (data.main === 'Clouds') {
+      body.classList.add('cloudy');
+    } else if (data.main === 'Clear') {
+      body.classList.add('sunny');
+    } else if (data.main === 'Rain') {
+      body.classList.add('rainy');
+    } else if (data.main === 'Drizzle') {
+      body.classList.add('rainy');
+    } else if (data.main === 'Snow') {
+      body.classList.add('snowy');
+      body.style.color = '#212121';
+    }
+
+    weatherCard.appendChild(newEl);
+  }
+}
+
 async function renderUi() {
+  weatherCard.innerHTML = '';
+
   if (searchInput.value === '') {
     showAlert('Please enter city name!', 'error');
     return;
   }
 
   showResults();
+
+  saveToStorage(getForecast(searchInput.value.trim()));
+
+  searchInput.value = '';
 }
 
 //getForecast
@@ -38,33 +79,70 @@ async function getForecast(country) {
 
 async function showResults() {
   const data = await getForecast(searchInput.value.trim());
-  console.log(data);
+
+  if (data.cod === '404') {
+    weatherCard.innerHTML = `<h2>City not found!</h2>`;
+  }
 
   const div = document.createElement('div');
   div.classList.add('details-top');
+  // div.setAttribute('data-aos', 'fade-up');
   div.innerHTML = `
      <h2 id="country-name">${data.name}</h2>
           <p id="temp">${data.main.temp}°c</p>
-          <p class="description">${data.weather.description}</p>
+          <p class="description">${data.weather[0].description}</p>
           <p id="weather-condition">
-            <img src="" alt="Weather Icon" id="weather-icon" />
+            <img src="${`http://openweathermap.org/img/w/${data.weather[0].icon}.png`}" alt="Weather Icon" id="weather-icon" />
           </p>
   `;
-  weatherCard.appendChild(div);
 
-  // if(data.weather.main === '') {
-  //   body.classList.add()
-  // }
+  if (data.weather[0].main === 'range of thunderstorm') {
+    body.classList.add('thunderstorm');
+  } else if (data.weather[0].main === 'Clouds') {
+    body.classList.add('cloudy');
+  } else if (data.weather[0].main === 'Clear') {
+    body.classList.add('sunny');
+  } else if (data.weather[0].main === 'Rain') {
+    body.classList.add('rainy');
+  } else if (data.weather[0].main === 'Drizzle') {
+    body.classList.add('rainy');
+  } else if (data.weather[0].main === 'Snow') {
+    body.classList.add('snowy');
+    body.style.color = '#212121';
+  }
+
+  weatherCard.appendChild(div);
+}
+
+//saveto local storage
+async function saveToStorage(response) {
+  const data = await response;
+
+  localStorage.clear();
+
+  let temprature = {
+    name: data.name,
+    temp: data.main.temp,
+    descr: data.weather[0].description,
+    icon: data.weather[0].icon,
+    main: data.weather[0].main,
+  };
+
+  const itemsFromStorage = JSON.parse(localStorage.getItem('condition')) || [];
+
+  itemsFromStorage.push(temprature);
+
+  localStorage.setItem('condition', JSON.stringify(itemsFromStorage));
 }
 
 //showloader
 function showLoader() {
-  document.querySelector('#loader').classList.add('show');
+  document.querySelector('.loader').classList.add('show');
 }
 
 //hideloader
 function hideLoader() {
-  document.querySelector('#loader').classList.remove('show');
+  document.querySelector('.loader').classList.remove('show');
 }
 
 //Alert
@@ -83,6 +161,7 @@ function showAlert(message, className) {
 function init() {
   //Event listeners
   searchBtn.addEventListener('click', renderUi);
+  window.addEventListener('DOMContentLoaded', displaySavedTemp);
 }
 
 init();
