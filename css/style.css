@@ -7,7 +7,7 @@ body {
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  margin: 10%;
+  margin: 5%;
   transition: background 0.5s ease-in-out;
 }
 
@@ -52,6 +52,19 @@ button {
   font-family: sans-serif;
 }
 
+.weather-card #temp {
+  font-size: 1.2rem;
+}
+
+.weather-card .description {
+  font-size: 1.2rem;
+}
+
+.weather-card p img {
+  height: 5rem;
+  width: 5rem;
+}
+
 .extra-details {
   display: none;
   margin-top: 10px;
@@ -78,7 +91,7 @@ button {
   background: linear-gradient(to right, #e0f7fa, #fff);
 }
 
-#loader {
+.loader {
   display: flex;
   justify-content: center;
   margin-bottom: 2%;
